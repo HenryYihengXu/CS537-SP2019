@@ -12,8 +12,8 @@ int main(int argc, char *argv[]) {
 			printf("my-cat: cannot open file\n");
 			exit(1); 
 		}
-		char buffer[5]; 
-		while (fgets(buffer, 5, fp)) {
+		char buffer[100]; 
+		while (fgets(buffer, 100, fp)) {
 			printf("%s", buffer);
 		}
 		fclose(fp);

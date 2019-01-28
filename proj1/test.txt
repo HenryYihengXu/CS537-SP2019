@@ -5,7 +5,7 @@ prompt> ~cs537-1/tests/p1a/test-my-cat.csh
 
 This will run the tests for my-cat. If it works well, it should look like this:
 
-prompt> ~cs537-1/tests/p1a/test-my-cat.csh
+prompt> ~cs537-1/tests/p1a/test-my-cat.csh?gcc -o my-cat my-cat.c -Wall -Werror
 TEST 0 - clean build (program should compile without errors or warnings)
 RESULT passed
 
