@@ -1,0 +1,84 @@
+This README describes how to run the tests for p1a. It should be simple;
+for example, to test your implementation of my-cat, just type:
+
+prompt> ~cs537-1/tests/p1a/test-my-cat.csh
+
+This will run the tests for my-cat. If it works well, it should look like this:
+
+prompt> ~cs537-1/tests/p1a/test-my-cat.csh
+TEST 0 - clean build (program should compile without errors or warnings)
+RESULT passed
+
+TEST 1 - basic test: a one-line file
+RESULT passed
+
+TEST 2 - simple multi-file test
+RESULT passed
+
+TEST 3 - no input file at all
+RESULT passed
+
+TEST 4 - long file
+RESULT passed
+
+TEST 5 - bad file on command line (does not exist)
+RESULT passed
+
+TEST 6 - many bad files on command line (does not exist)
+RESULT passed
+
+prompt>
+
+Similarly, to test my-sed and my-uniq:
+
+prompt> ~cs537-1/tests/p1a/test-my-sed.csh
+prompt> ~cs537-1/tests/p1a/test-my-uniq.csh
+
+
+Unfortunately, sometimes a test won't pass. Here's an example of this:
+
+prompt> ~cs537-1/tests/p1a/test-my-cat.csh
+TEST 0 - clean build (program should compile without errors or warnings)
+RESULT passed
+
+TEST 1 - basic test: a one-line file
+RESULT failed
+standard output does not match expected
+expected: [simple test
+]
+got:      [simple test
+
+]
+
+
+TESTING HALTED (use -c or --continue to keep going if you like)
+prompt>
+
+As you can see in the test, the output of my-cat has an extra newline in it,
+and thus does not match what is expected. The result is that the testing is
+halted, and an error reported. You can optionally run all the tests (despite
+the failure) by adding the -c flag on the command line.
+
+When you run into a problem, you may wish to run a test "by hand" in order
+to debug your code. To do this, one particularly handy flag is the "-v" flag,
+which tells you specifically which command was run to do the test. For
+example, to get more info about the my-cat tests, you would type:
+
+prompt> ~cs537-1/tests/p1a/test-my-cat.csh -v
+TEST 0 - clean build (program should compile without errors or warnings)
+COMMAND gcc my-cat.c -o my-cat -Wall -Werror
+
+TEST 1 - basic test: a one-line file
+COMMAND ./my-cat /afs/cs.wisc.edu/u/c/s/cs537-1/tests/p1a/tests-my-cat/1.in
+RESULT passed
+...
+
+As you can see, the COMMAND line tells you exactly what to run to run
+a test by hand. This can be useful if you are running into problems with
+a particular test. You can then cut and paste this to run the test by hand:
+
+prompt> ./my-cat /afs/cs.wisc.edu/u/c/s/cs537-1/tests/p1a/tests-my-cat/1.in
+
+You could then do primitive debugging (by adding printf's throughout the code)
+or do something more sophisticated (by using gdb for example).
+
