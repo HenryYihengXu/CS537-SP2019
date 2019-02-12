@@ -175,6 +175,9 @@ int main(int argc, char *argv[]) {
             //char* commandArgv[size + 1];
             parseArgv(commandArgv, line, "\t ");
         }
+        if (strcmp(operator, "|") == 0) {
+
+        }
 
         /*Token *commandList = (Token*)malloc(sizeof(Token));
         int size = parseList(line, commandList);*/
@@ -359,17 +362,18 @@ void cd(int argc, char* argv[]) {
 
 void userCall(int argc, char* argv[], char *fp) {
     char* path = findPath(argv[0]);
-    if (path == NULL) {
-        write(STDERR_FILENO, error_message, strlen(error_message));
-        return;
-    }
     argv[0] = path;
     int rc = fork();
     if (rc == 0) {
         if (fp != NULL) {
             freopen(fp, "w", stdout);
+            //freopen(fp, "w", stderr);
             /*close(STDOUT_FILENO);
             open(fp, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);*/
+        }
+        if (path == NULL) {
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            exit(0);
         }
         int exec_rc = execv(path, argv);
         if (exec_rc == -1){
