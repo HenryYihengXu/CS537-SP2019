@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="proj2"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="msvc8"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 all"/>
+					<CompileFile command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="proj2">
+				<Option output="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug/proj2.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.13.26128\ATLMFC\include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.13.26128\include"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\winrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\cppwinrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 proj2"/>
+					<CompileFile command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="proj2/fast">
+				<Option output="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug/proj2.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.13.26128\ATLMFC\include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.13.26128\include"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\winrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\cppwinrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 proj2/fast"/>
+					<CompileFile command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 edit_cache"/>
+					<CompileFile command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f &quot;C:\Users\20163\Desktop\Spring 2019\CS 537\CS537-SP2019\proj2\cmake-build-debug\Makefile&quot; VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/wish.c">
+			<Option target="proj2"/>
+		</Unit>
+		<Unit filename="C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

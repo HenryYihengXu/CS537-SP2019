@@ -1,0 +1,3 @@
+C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug/CMakeFiles/proj2.dir
+C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/cmake-build-debug/CMakeFiles/rebuild_cache.dir

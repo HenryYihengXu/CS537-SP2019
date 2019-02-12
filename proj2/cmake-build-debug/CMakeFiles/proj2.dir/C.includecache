@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/20163/Desktop/Spring 2019/CS 537/CS537-SP2019/proj2/wish.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+
