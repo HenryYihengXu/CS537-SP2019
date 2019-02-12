@@ -32,8 +32,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/wish.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="207">
-              <caret line="93" column="8" lean-forward="true" selection-start-line="93" selection-start-column="8" selection-end-line="93" selection-end-column="8" />
+            <state relative-caret-position="45">
+              <caret line="367" column="18" selection-start-line="367" selection-start-column="18" selection-end-line="367" selection-end-column="18" />
+              <folding>
+                <marker date="1550011614291" expanded="true" signature="9625:9769" ph="{...}" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -74,8 +77,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$USER_HOME$/Documents/Tencent Files/2781676271/FileRecv/example(1).c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="675">
-              <caret line="58" column="30" lean-forward="true" selection-start-line="58" selection-start-column="30" selection-end-line="58" selection-end-column="30" />
+            <state relative-caret-position="85">
+              <caret line="8" column="23" lean-forward="true" selection-start-line="6" selection-start-column="4" selection-end-line="8" selection-end-column="23" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -99,6 +102,9 @@
       <find>printf(&quot;%</find>
       <find>printf(&quot;%s\n&quot;,</find>
       <find>printf</find>
+      <find>argv[</find>
+      <find>addHistory</find>
+      <find>printf(&quot;%s\n&quot;</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -178,12 +184,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1549835779064</updated>
-      <workItem from="1549835785722" duration="31646000" />
+      <workItem from="1549835785722" duration="50412000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="31646000" />
+    <option name="totallyTimeSpent" value="50412000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1295" height="695" extended-state="6" />
@@ -252,13 +258,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Documents/Tencent Files/2781676271/FileRecv/example(1).c">
+    <entry file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/ucrt/string.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="675">
-          <caret line="58" column="30" lean-forward="true" selection-start-line="58" selection-start-column="30" selection-end-line="58" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="123">
+          <caret line="98" column="12" selection-start-line="98" selection-start-column="12" selection-end-line="98" selection-end-column="12" />
         </state>
       </provider>
     </entry>
@@ -272,17 +275,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/ucrt/string.h">
+    <entry file="file://$USER_HOME$/Documents/Tencent Files/2781676271/FileRecv/example(1).c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="123">
-          <caret line="98" column="12" selection-start-line="98" selection-start-column="12" selection-end-line="98" selection-end-column="12" />
+        <state relative-caret-position="85">
+          <caret line="8" column="23" lean-forward="true" selection-start-line="6" selection-start-column="4" selection-end-line="8" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/wish.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="93" column="8" lean-forward="true" selection-start-line="93" selection-start-column="8" selection-end-line="93" selection-end-column="8" />
+        <state relative-caret-position="45">
+          <caret line="367" column="18" selection-start-line="367" selection-start-column="18" selection-end-line="367" selection-end-column="18" />
+          <folding>
+            <marker date="1550011614291" expanded="true" signature="9625:9769" ph="{...}" />
+          </folding>
         </state>
       </provider>
     </entry>

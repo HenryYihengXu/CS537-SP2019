@@ -3,12 +3,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <ctype.h>
+#include <fcntl.h>
 #define _GNU_SOURCE
 
-typedef struct tokenList {
+/*typedef struct tokenList {
     char *word;
     struct tokenList *next;
-} Token;
+} Token;*/
 
 typedef struct historyList {
     char *command;
@@ -24,23 +28,25 @@ const char error_message[30] = "An error has occurred\n";
 History *commandHistory;
 Path *allPath;
 
-int getStream(int argc, char *argv[], FILE *fp);
-void getOperator(char* line, char* operator);
-int parseList(char *line, Token *head);
-void parseArgv(Token *commandList, char *argv[]);
+char* getOperator(char* line);
+//int parseList(char *line, Token *head);
+//void parseArgv(Token *commandList, char *argv[]);
+int getTokNumber(char *str, char *delimiters);
+void parseArgv(char *argv[], char* line, char* delimiters);
 void addHistory(History *head, char* line);
 void allHistory(History *current);
-void limitHistory(History *current, double n);
+void limitedHistory(History *current, double n);
 void history(int argc, char *argv[]);
 void addPath(char* path);
 void path(int argc, char* argv[]);
 void cd(int argc, char* argv[]);
+char* findPath(char* s);
+void userCall(int argc, char* argv[], char *fp);
 
 int main(int argc, char *argv[]) {
 
     FILE *fp;
     int mode;
-    //int mode = getStream(argc, argv, stream);
 
     if (argc == 1) {
         fp = stdin;
@@ -66,23 +72,31 @@ int main(int argc, char *argv[]) {
     allPath->next->next = NULL;
     allPath->next->content = "/bin";
 
+    char** commandArgv;
+    int size;
+
     if (mode == 1) {
         printf("wish> ");
     }
+
+    char* file;
 
     char *line = NULL;
     size_t len = 0;
     while (getline(&line, &len, fp) != -1) {
 
-        line[strlen(line) - 1] = '\0';
+        if (line[strlen(line) - 1] == '\n') {
+            line[strlen(line) - 1] = '\0';
+        }
         if (line == NULL) {
             if (mode == 1) {
                 printf("wish> ");
             }
             continue;
         }
-        char* operator = "none";
-        getOperator(line, operator);
+        file = NULL;
+        char* operator = getOperator(line);
+        //printf("%s\n", operator);
         if (strcmp(operator, "error") == 0) {
             write(STDERR_FILENO, error_message, strlen(error_message));
             addHistory(commandHistory, line);
@@ -91,19 +105,82 @@ int main(int argc, char *argv[]) {
             }
             continue;
         }
-        
-        Token *commandList = (Token*)malloc(sizeof(Token));
-        int size = parseList(line, commandList);
-        if (size == 0) {
-            if (mode == 1) {
-                printf("wish> ");
+
+        if (strcmp(operator, ">") == 0) {
+            addHistory(commandHistory, line);
+            if (line[0] == '>') {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
             }
-            continue;
+            char* left = strtok(line, ">");
+            char* right = strtok(NULL, ">");
+            if (right == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
+            //printf("%s\n", left);
+            //printf("%s\n", right);
+
+            int l = getTokNumber(left, "\t ");
+            if (l == 0) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
+
+
+            int r = getTokNumber(right, "\t ");
+            if (r != 1) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
+            //printf("%s\n", left);
+
+            size = l;
+            commandArgv = (char**)malloc((size + 1) * sizeof(char*));
+            parseArgv(commandArgv, line, "\t ");
+
+            file = strtok(right, "\t ");
+            //printf("%s\n", file);
+
+            /*if (freopen(file, "w", stdout) == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }*/
         }
-        addHistory(commandHistory, line);
-        char* commandArgv[size + 1];
-        parseArgv(commandList, commandArgv);
-        free(commandList);
+        if (strcmp(operator, "none") == 0){
+            size = getTokNumber(line, "\t ");
+            if (size == 0) {
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
+            addHistory(commandHistory, line);
+            commandArgv = (char**)malloc((size + 1) * sizeof(char*));
+            //char* commandArgv[size + 1];
+            parseArgv(commandArgv, line, "\t ");
+        }
+
+        /*Token *commandList = (Token*)malloc(sizeof(Token));
+        int size = parseList(line, commandList);*/
+        //printf("%s\n", line);
+
+        //printf("%s\n", commandArgv[0]);
 
         if (strcmp("exit", commandArgv[0]) == 0){
             if (size != 1) {
@@ -132,7 +209,12 @@ int main(int argc, char *argv[]) {
                 printf("wish> ");
             }
             continue;
+        } else {
+            userCall(size, commandArgv, file);
         }
+
+        //fclose(stdout);
+        //freopen("/dev/tty","w",stdout);
         if (mode == 1) {
             printf("wish> ");
         }
@@ -140,78 +222,69 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-/*int getStream(int argc, char *argv[], FILE *fp) {
-    if (argc == 1) {
-        fp = stdin;
-        printf("a\n");
-        return 1;
-    } else if (argc == 2) {
-        fp = fopen(argv[1], "r");
-        if (fp == NULL) {
-            write(STDERR_FILENO, error_message, strlen(error_message));
-            exit(1);
-        }
-        return 0;
-    } else {
-        write(STDERR_FILENO, error_message, strlen(error_message));
-        exit(1);
-    }
-}*/
-
-void getOperator(char* line, char* operator) {
+char* getOperator(char* line) {
     int len = strlen(line);
     int i;
+    char* operator = (char*)malloc(sizeof(char*));
+    operator = "none";
     for (i = 0; i < len; i++) {
         if (line[i] == '|') {
-            if (operator != NULL) {
+            if (strcmp(operator, "none") != 0) {
                 operator = "error";
+                return operator;
             } else {
                 operator = "|";
                 continue;
             }
         }
         if (line[i] == '>') {
-            if (operator != NULL) {
+            if (strcmp(operator, "none") != 0) {
                 operator = "error";
+                return operator;
             } else {
                 operator = ">";
             }
         }
     }
+    return operator;
 }
 
-int parseList(char *line, Token *head) {
-    int i = 0;
-    Token *end = head;
-    char *token = strtok(line, "\t ");
-    while (token) {
-        Token *node = (Token*)malloc(sizeof(Token));
-        node->word = token;
-        end->next = node;
-        end = node;
-        i++;
-        token = strtok(NULL, "\t ");
+int getTokNumber(char *str, char *delimiters)
+{
+    int n = strlen(str);
+    char *s2 = (char *)malloc(n);
+    memcpy(s2, str, n);
+
+    n = 0;
+    char *pch = strtok(s2, delimiters);
+    while (pch != NULL)
+    {
+        n++;
+        pch = strtok(NULL, delimiters);
     }
-    end->next = NULL;
-    return i;
+    free(s2);
+    return n;
 }
 
-void parseArgv(Token *commandList, char *argv[]) {
-    int i = 0;
-    Token *current = commandList->next;
-    while (current != NULL) {
-        argv[i] = current->word;
-        i++;
-        current = current->next;
+void parseArgv(char *argv[], char* line, char* delimiters) {
+    int n = 0;
+    char *pch = strtok(line, delimiters);
+    while (pch != NULL)
+    {
+        argv[n] = pch;
+        n++;
+        pch = strtok(NULL, delimiters);
     }
-    argv[i] = NULL;
-    return;
+    argv[n] = NULL;
 }
 
 void addHistory(History *head, char* line) {
     History* node = (History*)malloc(sizeof(History));
+    int n = strlen(line);
+    char *his = (char *)malloc(n);
+    memcpy(his, line, n);
     node->next = head->next;
-    node->command = line;
+    node->command = his;
     head->next = node;
     return;
 }
@@ -222,7 +295,7 @@ void history(int argc, char *argv[]) {
         return;
     }
     if (argc == 1) {
-        allHistory(commandHistory);
+        allHistory(commandHistory->next);
         return;
     }
     double n = atof(argv[1]);
@@ -230,7 +303,7 @@ void history(int argc, char *argv[]) {
         write(STDERR_FILENO, error_message, strlen(error_message));
         return;
     }
-    limitHistory(commandHistory, n);
+    limitedHistory(commandHistory->next, n);
 }
 
 void allHistory(History *current) {
@@ -241,11 +314,11 @@ void allHistory(History *current) {
     printf("%s\n", current->command);
 }
 
-void limitHistory(History *current, double n) {
+void limitedHistory(History *current, double n) {
     if (current == NULL || n == 0) {
         return;
     }
-    limitHistory(current->next, n - 1);
+    limitedHistory(current->next, n - 1);
     printf("%s\n", current->command);
 }
 
@@ -262,9 +335,12 @@ void path(int argc, char* argv[]) {
 }
 
 void addPath(char* path) {
+    int n = strlen(path);
+    char *p = (char *)malloc(n);
+    memcpy(p, path, n);
     Path* node = (Path*)malloc(sizeof(Path));
     node->next = allPath->next;
-    node->content = path;
+    node->content = p;
     allPath->next = node;
     return;
 }
@@ -279,4 +355,54 @@ void cd(int argc, char* argv[]) {
         write(STDERR_FILENO, error_message, strlen(error_message));
         return;
     }
+}
+
+void userCall(int argc, char* argv[], char *fp) {
+    char* path = findPath(argv[0]);
+    if (path == NULL) {
+        write(STDERR_FILENO, error_message, strlen(error_message));
+        return;
+    }
+    argv[0] = path;
+    int rc = fork();
+    if (rc == 0) {
+        if (fp != NULL) {
+            freopen(fp, "w", stdout);
+            /*close(STDOUT_FILENO);
+            open(fp, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);*/
+        }
+        int exec_rc = execv(path, argv);
+        if (exec_rc == -1){
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            exit(0);
+        }
+    } else {
+        wait(NULL);
+    }
+}
+
+char* findPath(char* s) {
+    Path* current = allPath->next;
+    while (current != NULL) {
+        //printf("%s\n", current->content);
+        int n = strlen(current->content) + strlen(s) + 1;
+        char* path = (char *)malloc(n);
+        memcpy(path, current->content, n);
+        //printf("%s\n", current->content);
+        //printf("%s\n", path);
+        if (path[strlen(path) - 1] == '/') {
+            strcat(path, s);
+        } else {
+            strcat(path, "/");
+            strcat(path, s);
+        }
+        if (access(path, X_OK) == 0) {
+            //printf("%s\n", path);
+            return path;
+        } else {
+            free(path);
+            current = current->next;
+        }
+    }
+    return NULL;
 }
