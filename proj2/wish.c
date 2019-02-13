@@ -41,7 +41,7 @@ void addPath(char* path);
 void path(int argc, char* argv[]);
 void cd(int argc, char* argv[]);
 char* findPath(char* s);
-void userCall(int argc, char* argv[], char *fp);
+void userCall(int argc, char* argv[], char *fp, int isPipe);
 
 int main(int argc, char *argv[]) {
 
@@ -80,11 +80,15 @@ int main(int argc, char *argv[]) {
     }
 
     char* file;
+    char** pipeBuf = NULL;
+    int pipeBufLen = 0;
+    int isPipe = 0;
 
     char *line = NULL;
     size_t len = 0;
     while (getline(&line, &len, fp) != -1) {
-
+        fflush(stdin);
+        fflush(stdout);
         if (line[strlen(line) - 1] == '\n') {
             line[strlen(line) - 1] = '\0';
         }
@@ -124,8 +128,6 @@ int main(int argc, char *argv[]) {
                 }
                 continue;
             }
-            //printf("%s\n", left);
-            //printf("%s\n", right);
 
             int l = getTokNumber(left, "\t ");
             if (l == 0) {
@@ -136,7 +138,6 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-
             int r = getTokNumber(right, "\t ");
             if (r != 1) {
                 write(STDERR_FILENO, error_message, strlen(error_message));
@@ -145,23 +146,14 @@ int main(int argc, char *argv[]) {
                 }
                 continue;
             }
-            //printf("%s\n", left);
 
             size = l;
             commandArgv = (char**)malloc((size + 1) * sizeof(char*));
-            parseArgv(commandArgv, line, "\t ");
+            parseArgv(commandArgv, left, "\t ");
 
             file = strtok(right, "\t ");
-            //printf("%s\n", file);
-
-            /*if (freopen(file, "w", stdout) == NULL) {
-                write(STDERR_FILENO, error_message, strlen(error_message));
-                if (mode == 1) {
-                    printf("wish> ");
-                }
-                continue;
-            }*/
         }
+
         if (strcmp(operator, "none") == 0){
             size = getTokNumber(line, "\t ");
             if (size == 0) {
@@ -174,16 +166,78 @@ int main(int argc, char *argv[]) {
             commandArgv = (char**)malloc((size + 1) * sizeof(char*));
             //char* commandArgv[size + 1];
             parseArgv(commandArgv, line, "\t ");
+            if (pipeBuf != NULL) {
+                char** temp = commandArgv;
+                commandArgv = (char**)malloc((size + pipeBufLen + 1) * sizeof(char*));
+                int i;
+                for (i = 0; i < pipeBufLen; i++) {
+                    commandArgv[i] = pipeBuf[i];
+                }
+                for (i = pipeBufLen; i < size + pipeBufLen; i++) {
+                    commandArgv[i] = temp[i - pipeBufLen];
+                }
+                commandArgv[i] = NULL;
+                //printf("%s\n", commandArgv[0]);
+                //printf("%s\n", commandArgv[1]);
+
+                pipeBuf = NULL;
+                pipeBufLen = 0;
+            }
         }
+
         if (strcmp(operator, "|") == 0) {
+            addHistory(commandHistory, line);
+            if (line[0] == '|') {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
+            char* left = strtok(line, "|");
+            char* right = strtok(NULL, "|");
+            if (right == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
 
+            int l = getTokNumber(left, "\t ");
+            if (l == 0) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
+
+            int r = getTokNumber(right, "\t ");
+            if (r == 0) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                if (mode == 1) {
+                    printf("wish> ");
+                }
+                continue;
+            }
+
+            isPipe = 1;
+            size = l;
+            commandArgv = (char**)malloc((size + 1) * sizeof(char*));
+            parseArgv(commandArgv, left, "\t ");
+
+            int n = strlen(right);
+            char *s2 = (char *)malloc(n);
+            memcpy(s2, right, n);
+
+            pipeBuf = (char**)malloc((r + 1) * sizeof(char*));
+            pipeBufLen = r;
+            //printf("%s\n", s2);
+            parseArgv(pipeBuf, s2, "\t ");
+            //printf("%d\n", r);
+            //printf("%s\n", pipeBuf[0]);
         }
-
-        /*Token *commandList = (Token*)malloc(sizeof(Token));
-        int size = parseList(line, commandList);*/
-        //printf("%s\n", line);
-
-        //printf("%s\n", commandArgv[0]);
 
         if (strcmp("exit", commandArgv[0]) == 0){
             if (size != 1) {
@@ -196,28 +250,13 @@ int main(int argc, char *argv[]) {
             exit(0);
         } else if (strcmp("cd", commandArgv[0]) == 0){
             cd(size, commandArgv);
-            if (mode == 1) {
-                printf("wish> ");
-            }
-            continue;
         } else if (strcmp("history", commandArgv[0]) == 0){
             history(size, commandArgv);
-            if (mode == 1) {
-                printf("wish> ");
-            }
-            continue;
         } else if (strcmp("path", commandArgv[0]) == 0){
             path(size, commandArgv);
-            if (mode == 1) {
-                printf("wish> ");
-            }
-            continue;
         } else {
-            userCall(size, commandArgv, file);
+            userCall(size, commandArgv, file, isPipe);
         }
-
-        //fclose(stdout);
-        //freopen("/dev/tty","w",stdout);
         if (mode == 1) {
             printf("wish> ");
         }
@@ -360,9 +399,9 @@ void cd(int argc, char* argv[]) {
     }
 }
 
-void userCall(int argc, char* argv[], char *fp) {
+void userCall(int argc, char* argv[], char *fp, int isPipe) {
     char* path = findPath(argv[0]);
-    argv[0] = path;
+    //argv[0] = path;
     int rc = fork();
     if (rc == 0) {
         if (fp != NULL) {
@@ -370,6 +409,16 @@ void userCall(int argc, char* argv[], char *fp) {
             //freopen(fp, "w", stderr);
             /*close(STDOUT_FILENO);
             open(fp, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);*/
+        }
+        if (isPipe) {
+            //freopen(STDIN_FILENO, "w", stdout);
+            //close(STDOUT_FILENO);
+            /*int i = open(STDIN_FILENO, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);
+            if (i != 0) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }*/
+            //open(STDIN_FILENO, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);
         }
         if (path == NULL) {
             write(STDERR_FILENO, error_message, strlen(error_message));
