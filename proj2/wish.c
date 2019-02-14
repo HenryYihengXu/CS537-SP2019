@@ -9,11 +9,6 @@
 #include <fcntl.h>
 #define _GNU_SOURCE
 
-/*typedef struct tokenList {
-    char *word;
-    struct tokenList *next;
-} Token;*/
-
 typedef struct historyList {
     char *command;
     struct historyList *next;
@@ -29,8 +24,6 @@ History *commandHistory;
 Path *allPath;
 
 char* getOperator(char* line);
-//int parseList(char *line, Token *head);
-//void parseArgv(Token *commandList, char *argv[]);
 int getTokNumber(char *str, char *delimiters);
 void parseArgv(char *argv[], char* line, char* delimiters);
 void addHistory(History *head, char* line);
@@ -41,7 +34,7 @@ void addPath(char* path);
 void path(int argc, char* argv[]);
 void cd(int argc, char* argv[]);
 char* findPath(char* s);
-void userCall(int argc, char* argv[], char *fp, int isPipe);
+void userCall(int argc, char* argv[], char *fp, char** pipeBuf);
 
 int main(int argc, char *argv[]) {
 
@@ -81,8 +74,6 @@ int main(int argc, char *argv[]) {
 
     char* file;
     char** pipeBuf = NULL;
-    int pipeBufLen = 0;
-    int isPipe = 0;
 
     char *line = NULL;
     size_t len = 0;
@@ -99,8 +90,8 @@ int main(int argc, char *argv[]) {
             continue;
         }
         file = NULL;
+        pipeBuf = NULL;
         char* operator = getOperator(line);
-        //printf("%s\n", operator);
         if (strcmp(operator, "error") == 0) {
             write(STDERR_FILENO, error_message, strlen(error_message));
             addHistory(commandHistory, line);
@@ -164,25 +155,7 @@ int main(int argc, char *argv[]) {
             }
             addHistory(commandHistory, line);
             commandArgv = (char**)malloc((size + 1) * sizeof(char*));
-            //char* commandArgv[size + 1];
             parseArgv(commandArgv, line, "\t ");
-            if (pipeBuf != NULL) {
-                char** temp = commandArgv;
-                commandArgv = (char**)malloc((size + pipeBufLen + 1) * sizeof(char*));
-                int i;
-                for (i = 0; i < pipeBufLen; i++) {
-                    commandArgv[i] = pipeBuf[i];
-                }
-                for (i = pipeBufLen; i < size + pipeBufLen; i++) {
-                    commandArgv[i] = temp[i - pipeBufLen];
-                }
-                commandArgv[i] = NULL;
-                //printf("%s\n", commandArgv[0]);
-                //printf("%s\n", commandArgv[1]);
-
-                pipeBuf = NULL;
-                pipeBufLen = 0;
-            }
         }
 
         if (strcmp(operator, "|") == 0) {
@@ -222,7 +195,6 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            isPipe = 1;
             size = l;
             commandArgv = (char**)malloc((size + 1) * sizeof(char*));
             parseArgv(commandArgv, left, "\t ");
@@ -232,11 +204,7 @@ int main(int argc, char *argv[]) {
             memcpy(s2, right, n);
 
             pipeBuf = (char**)malloc((r + 1) * sizeof(char*));
-            pipeBufLen = r;
-            //printf("%s\n", s2);
             parseArgv(pipeBuf, s2, "\t ");
-            //printf("%d\n", r);
-            //printf("%s\n", pipeBuf[0]);
         }
 
         if (strcmp("exit", commandArgv[0]) == 0){
@@ -255,7 +223,7 @@ int main(int argc, char *argv[]) {
         } else if (strcmp("path", commandArgv[0]) == 0){
             path(size, commandArgv);
         } else {
-            userCall(size, commandArgv, file, isPipe);
+            userCall(size, commandArgv, file, pipeBuf);
         }
         if (mode == 1) {
             printf("wish> ");
@@ -267,7 +235,7 @@ int main(int argc, char *argv[]) {
 char* getOperator(char* line) {
     int len = strlen(line);
     int i;
-    char* operator = (char*)malloc(sizeof(char*));
+    char* operator;
     operator = "none";
     for (i = 0; i < len; i++) {
         if (line[i] == '|') {
@@ -367,10 +335,6 @@ void limitedHistory(History *current, double n) {
 void path(int argc, char* argv[]) {
     int i;
     for (i = 1; i < argc; i++) {
-        /*int len = strlen(argv[i]);
-        if (argv[i][len - 1] == '/') {
-            argv[i][len - 1] = '\0';
-        }*/
         addPath(argv[i]);
     }
     return;
@@ -399,50 +363,77 @@ void cd(int argc, char* argv[]) {
     }
 }
 
-void userCall(int argc, char* argv[], char *fp, int isPipe) {
+void userCall(int argc, char* argv[], char *fp, char** pipeBuf) {
     char* path = findPath(argv[0]);
-    //argv[0] = path;
+    int fd[2];
+    pipe(fd);
     int rc = fork();
     if (rc == 0) {
         if (fp != NULL) {
             freopen(fp, "w", stdout);
-            //freopen(fp, "w", stderr);
-            /*close(STDOUT_FILENO);
-            open(fp, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);*/
-        }
-        if (isPipe) {
-            //freopen(STDIN_FILENO, "w", stdout);
-            //close(STDOUT_FILENO);
-            /*int i = open(STDIN_FILENO, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);
-            if (i != 0) {
+            freopen(fp, "w", stderr);
+            if (path == NULL) {
                 write(STDERR_FILENO, error_message, strlen(error_message));
                 exit(0);
-            }*/
-            //open(STDIN_FILENO, O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU);
-        }
-        if (path == NULL) {
-            write(STDERR_FILENO, error_message, strlen(error_message));
-            exit(0);
-        }
-        int exec_rc = execv(path, argv);
-        if (exec_rc == -1){
-            write(STDERR_FILENO, error_message, strlen(error_message));
-            exit(0);
+            }
+            int exec_rc = execv(path, argv);
+            if (exec_rc == -1){
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+        } else if (pipeBuf != NULL) {
+            close(fd[0]);
+            dup2(fd[1],STDOUT_FILENO);
+            if (path == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+            int exec_rc = execv(path, argv);
+            if (exec_rc == -1){
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+        } else {
+            if (path == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+            int exec_rc = execv(path, argv);
+            if (exec_rc == -1){
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
         }
     } else {
         wait(NULL);
+        if (pipeBuf != NULL) {
+            int rc2 = fork();
+            if (rc2 == 0) {
+                close(fd[1]);
+                dup2(fd[0], 0);
+                char* path2 = findPath(pipeBuf[0]);
+                int execv_rc2 = execv(path2, pipeBuf);
+                if (execv_rc2 == -1) {
+                    write(STDERR_FILENO, error_message, strlen(error_message));
+                    exit(0);
+                }
+            } else {
+                close(fd[0]);
+                close(fd[1]);
+                wait(NULL);
+                pipeBuf = NULL;
+            }
+
+        }
     }
 }
 
 char* findPath(char* s) {
     Path* current = allPath->next;
     while (current != NULL) {
-        //printf("%s\n", current->content);
         int n = strlen(current->content) + strlen(s) + 1;
         char* path = (char *)malloc(n);
         memcpy(path, current->content, n);
-        //printf("%s\n", current->content);
-        //printf("%s\n", path);
         if (path[strlen(path) - 1] == '/') {
             strcat(path, s);
         } else {

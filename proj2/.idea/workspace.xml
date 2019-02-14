@@ -12,6 +12,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d626bb4d-5a7b-41f5-8194-2e64a92b53b0" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wish.c" beforeDir="false" afterPath="$PROJECT_DIR$/wish.c" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -32,8 +33,35 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/wish.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="405" column="18" lean-forward="true" selection-start-line="405" selection-start-column="18" selection-end-line="405" selection-end-column="18" />
+            <state relative-caret-position="272">
+              <caret line="90" column="9" lean-forward="true" selection-start-line="90" selection-start-column="9" selection-end-line="90" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../../../wish.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="141">
+              <caret line="434" column="13" lean-forward="true" selection-start-line="434" selection-start-column="13" selection-end-line="434" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../../../pipe.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="209">
+              <caret line="43" column="13" lean-forward="true" selection-start-line="38" selection-start-column="12" selection-end-line="43" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../../../pipeexecv.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="107">
+              <caret line="14" lean-forward="true" selection-end-line="47" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -99,9 +127,12 @@
       <find>printf(&quot;%</find>
       <find>printf(&quot;%s\n&quot;,</find>
       <find>printf</find>
-      <find>argv[</find>
       <find>addHistory</find>
       <find>printf(&quot;%s\n&quot;</find>
+      <find>ispipe = 0</find>
+      <find>commandArgv</find>
+      <find>commandArgv[</find>
+      <find>argv[</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -111,12 +142,15 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$USER_HOME$/Documents/Tencent Files/2781676271/FileRecv/example(1).c" />
+        <option value="$PROJECT_DIR$/../../../../wish.c" />
+        <option value="$PROJECT_DIR$/../../../../pipeexecv.c" />
+        <option value="$PROJECT_DIR$/../../../../pipe.c" />
         <option value="$PROJECT_DIR$/wish.c" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-11" />
     <option name="y" value="-11" />
     <option name="width" value="1890" />
@@ -182,12 +216,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1549835779064</updated>
-      <workItem from="1549835785722" duration="58876000" />
+      <workItem from="1549835785722" duration="70694000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="58876000" />
+    <option name="totallyTimeSpent" value="70694000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1295" height="695" extended-state="6" />
@@ -283,10 +317,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../pipeexecv.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="107">
+          <caret line="14" lean-forward="true" selection-end-line="47" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../pipe.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="43" column="13" lean-forward="true" selection-start-line="38" selection-start-column="12" selection-end-line="43" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../wish.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="141">
+          <caret line="434" column="13" lean-forward="true" selection-start-line="434" selection-start-column="13" selection-end-line="434" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/wish.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="405" column="18" lean-forward="true" selection-start-line="405" selection-start-column="18" selection-end-line="405" selection-end-column="18" />
+        <state relative-caret-position="272">
+          <caret line="90" column="9" lean-forward="true" selection-start-line="90" selection-start-column="9" selection-end-line="90" selection-end-column="9" />
         </state>
       </provider>
     </entry>
