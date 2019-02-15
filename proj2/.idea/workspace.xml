@@ -12,7 +12,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d626bb4d-5a7b-41f5-8194-2e64a92b53b0" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wish.c" beforeDir="false" afterPath="$PROJECT_DIR$/wish.c" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -33,8 +32,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/wish.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="258">
-              <caret line="433" column="5" lean-forward="true" selection-start-line="433" selection-start-column="5" selection-end-line="433" selection-end-column="5" />
+            <state relative-caret-position="105">
+              <caret line="365" column="17" lean-forward="true" selection-start-line="365" selection-start-column="17" selection-end-line="365" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -125,7 +124,7 @@
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="660" />
-    <option name="y" value="-20" />
+    <option name="y" value="-21" />
     <option name="width" value="1890" />
     <option name="height" value="960" />
   </component>
@@ -192,16 +191,17 @@
       <workItem from="1549835785722" duration="71293000" />
       <workItem from="1550162080460" duration="1232000" />
       <workItem from="1550190452348" duration="8463000" />
+      <workItem from="1550268394934" duration="1905000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="80988000" />
+    <option name="totallyTimeSpent" value="82893000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1295" height="695" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20129345" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20452708" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -290,8 +290,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/wish.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="433" column="5" lean-forward="true" selection-start-line="433" selection-start-column="5" selection-end-line="433" selection-end-column="5" />
+        <state relative-caret-position="105">
+          <caret line="365" column="17" lean-forward="true" selection-start-line="365" selection-start-column="17" selection-end-line="365" selection-end-column="17" />
         </state>
       </provider>
     </entry>

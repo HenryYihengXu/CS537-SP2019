@@ -361,11 +361,28 @@ void history(int argc, char *argv[]) {
         return;
     }
     // with one argument
-    double n = atof(argv[1]);
-    if (n <= 0.0) {
-        write(STDERR_FILENO, error_message, strlen(error_message));
-        return;
+    double n;
+    int i;
+    int flag = 0;
+    for (i = 0; i < strlen(argv[1]); i++) {
+        if (argv[1][i] != '0') {
+            flag = 1;
+            break;
+        }
     }
+    if (flag == 0) {
+        n = 0;
+    } else {
+        n = atof(argv[1]);
+        if (n == 0.0) {
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            return;
+        }
+        if (n < 0) {
+            n = 0;
+        }
+    }
+
     limitedHistory(commandHistory->next, n);
 }
 
@@ -380,7 +397,7 @@ void allHistory(History *current) {
 
 // recursively go through history list with a limited depth
 void limitedHistory(History *current, double n) {
-    if (current == NULL || n == 0) {
+    if (current == NULL || n <= 0) {
         return;
     }
     limitedHistory(current->next, n - 1);
