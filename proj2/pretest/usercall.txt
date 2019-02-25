@@ -1,0 +1,97 @@
+// deal with all user call
+// !!!!!! core function of the project !!!!!!!!
+void userCall(int argc, char* argv[], char *fp, char** pipeBuf) {
+    // get the complete path for the program
+    char* path = findPath(argv[0]);
+    // create a pipe for pipe command
+
+    int fd[2];
+    if (pipeBuf != NULL) {
+        pipe(fd);
+    }
+    // create child process
+    int rc = fork();
+    if (rc < 0) {
+        write(STDERR_FILENO, error_message, strlen(error_message));
+        exit(0);
+    }
+    if (rc == 0) { // in child process
+        if (fp != NULL) {            // !! redirection command !!
+            // redirect output and error to the file
+            int f1 = freopen(fp, "w", stdout);
+            int f2 = freopen(fp, "w", stderr);
+            if (f1 == 0 || f2 == 0) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+            if (path == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+            // execute the user process
+            int exec_rc = execv(path, argv);
+            if (exec_rc == -1){
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+        } else if (pipeBuf != NULL) {  // !!! pipe command !!!
+            // close the pipe end of the second process
+            // connect its output to one side of the pipe
+            // connect its stderr to one side of the pipe
+            close(fd[0]);
+            dup2(fd[1],STDOUT_FILENO);
+            dup2(fd[1], STDERR_FILENO);
+            if (path == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+            // execute the first process
+            int exec_rc = execv(path, argv);
+            if (exec_rc == -1){
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+        } else {                   // normal command
+            if (path == NULL) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+            // execute the user process
+            int exec_rc = execv(path, argv);
+            if (exec_rc == -1){
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+        }
+    } else {
+        wait(NULL);
+        if (pipeBuf != NULL) {   // !!! second half of pipe command !!!
+            // create another child process for the second half of pipe command!
+            int rc2 = fork();
+            if (rc2 < 0) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
+            if (rc2 == 0) {      // in the second child process!
+                // close the pipe end of the first process
+                // connect its input to the other side of the pipe
+                close(fd[1]);
+                dup2(fd[0], 0);
+                char* path2 = findPath(pipeBuf[0]);
+                // execute the second half of pipe command using what we saved previously!
+                int execv_rc2 = execv(path2, pipeBuf);
+                if (execv_rc2 == -1) {
+                    write(STDERR_FILENO, error_message, strlen(error_message));
+                    exit(0);
+                }
+            } else {
+                // close both end of the pipe
+                close(fd[0]);
+                close(fd[1]);
+                wait(NULL);
+                pipeBuf = NULL;
+            }
+
+        }
+    }
+}

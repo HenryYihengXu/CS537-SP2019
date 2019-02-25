@@ -458,8 +458,12 @@ void userCall(int argc, char* argv[], char *fp, char** pipeBuf) {
     if (rc == 0) { // in child process
         if (fp != NULL) {            // !! redirection command !!
             // redirect output and error to the file
-            freopen(fp, "w", stdout);
-            freopen(fp, "w", stderr);
+            int f1 = freopen(fp, "w", stdout);
+            int f2 = freopen(fp, "w", stderr);
+            if (f1 == 0 || f2 == 0) {
+                write(STDERR_FILENO, error_message, strlen(error_message));
+                exit(0);
+            }
             if (path == NULL) {
                 write(STDERR_FILENO, error_message, strlen(error_message));
                 exit(0);
