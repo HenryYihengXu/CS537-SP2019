@@ -25,7 +25,7 @@ main(int argc, char *argv[])
 		//printf("%d", j);
         if (st.inuse[j] && st.pid[j] >= 3 && st.pid[j] == mypid) {
             for (l = 3; l >= 0; l--) {
-                printf(1, "level:%d \t ticks-used:%d\n", l, st.ticks[j][l]);
+                printf(1, "level:%d \t ticks-used:%d \t wait_ticks:%d\n", l, st.ticks[j][l], st.wait_ticks[j][l]);
             }
         }
     }

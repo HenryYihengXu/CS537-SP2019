@@ -343,6 +343,7 @@ scheduler(void)
 	// Add ticks
 	p = proc;
     p->ticks[p->priority]++;
+	p->wait_ticks[p->priority] = 0;
     //p->tmpticks[p->priority]++;
     // Demote p if it uses up its time slice
     if (p->priority == 3) {

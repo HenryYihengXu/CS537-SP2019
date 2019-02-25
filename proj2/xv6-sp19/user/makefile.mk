@@ -17,6 +17,7 @@ USER_PROGS := \
 	usertests\
 	wc\
 	ticks-test\
+	muti-job-test\
 	zombie
 
 USER_PROGS := $(addprefix user/, $(USER_PROGS))
