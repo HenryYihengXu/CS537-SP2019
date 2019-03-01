@@ -75,6 +75,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int priority;                // The priority of this process
+  int priority_q0;              // The priority in level 0 in order to implement FIFO in level 0
   int ticks[4];                // number of ticks this process has accumulated at each of 4 priorities
   int wait_ticks[4];           // number of ticks this process has waited before being scheduled at each 4 priorities
 };

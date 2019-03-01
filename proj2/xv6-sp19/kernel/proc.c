@@ -22,6 +22,9 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+//
+int num_q0 = 0;
+
 void
 pinit(void)
 {
@@ -50,6 +53,7 @@ found:
   p->pid = nextpid++;
   // Henry Modified: reset 
   p->priority = 3;
+  //p->priority_q0 = 0;
   p->ticks[0] = 0;
   p->ticks[1] = 0;
   p->ticks[2] = 0;
@@ -283,7 +287,6 @@ scheduler(void)
   struct proc *p;
   int startIndex = 0;
   int current = 0;
-  int max = -1;
   int i = 0;
 
   for(;;){
@@ -294,18 +297,24 @@ scheduler(void)
 	
     acquire(&ptable.lock);
 
+	// implement MLFQ with only one array, ptable.
+	// iterative variable, to keep track of the current index in ptable
     i = startIndex;
-
+    int max = -1;
+	// traversal ptable from the index at which last traversal stopped, to the end.
     for (p = ptable.proc + startIndex; p < &ptable.proc[NPROC]; p++) {
+      // pick the first process that has the highest priority
       if (p->state == RUNNABLE && p->priority > max) {
 	    max = p->priority;
 	    proc = p;
-        //cprintf("%d\n", startIndex);
         current = i;
       }
       i++;
     }
     i = 0;
+	// traversal ptable from the beginning to the index at which last traversal stopped.
+	// these two for loop traversal the whole ptable.
+	// I go through ptable in this order so that a running process can use up its slice continuously.
     for (p = ptable.proc; p < &ptable.proc[startIndex]; p++) {
       if (p->state == RUNNABLE && p->priority > max) {
 	    max = p->priority;
@@ -315,8 +324,31 @@ scheduler(void)
       }
       i++;
     }
-    max = -1;
     startIndex = current;
+	
+	if (proc == NULL) {
+      release(&ptable.lock);
+	  continue;
+	}
+
+	//// FIFO in level 0
+	//   If the chosen process is in level 0, then go to level 0 and pick the first-arrived one.	
+	int firstq0 = NPROC + 1;
+	if (proc->priority == 0) {
+	  for (p = ptable.proc; p < &ptable.proc[startIndex]; p++) {
+        if (p->state == RUNNABLE && p->priority == 0 && p->priority_q0 < firstq0) {
+	      firstq0 = p->priority_q0;
+          proc = p;
+          //cprintf("%d\n", startIndex);
+        }
+      }
+	}
+	
+	if (proc == NULL) {
+      release(&ptable.lock);
+	  continue;
+	}
+	//
 	
 	// Add wait-ticks for every process except p
     // Promote processes if it waits too long
@@ -324,39 +356,72 @@ scheduler(void)
       if(p != proc && p->state == RUNNABLE) {
 	    p->wait_ticks[p->priority]++;
 	    if (p->priority == 2 && p->wait_ticks[2] % 160 == 0) {
+		  // When a process is promoted, reset wait_ticks in the (wrong: previous) all level(s)
+		  p->wait_ticks[0] = 0;
+		  p->wait_ticks[1] = 0;
+		  p->wait_ticks[2] = 0;
+		  p->wait_ticks[3] = 0;
+		  //p->ticks[2] = 0;
           p->priority++;
         }
 	    if (p->priority == 1 && p->wait_ticks[1] % 320 == 0) {
+		  p->wait_ticks[0] = 0;
+		  p->wait_ticks[1] = 0;
+		  p->wait_ticks[2] = 0;
+		  p->wait_ticks[3] = 0;
+		  //p->ticks[1] = 0;
 	      p->priority++;
 	    }
         if (p->priority == 0 && p->wait_ticks[0] % 500 == 0) {
+		  p->wait_ticks[0] = 0;
+		  p->wait_ticks[1] = 0;
+		  p->wait_ticks[2] = 0;
+		  p->wait_ticks[3] = 0;
+		  //p->ticks[0] = 0;
           p->priority++;
+		  //// FIFO in level 0
+		  //   onec a process is promoted from level 0, move all processes in level 0 which came after it forward.
+		  num_q0--;
+		  struct proc *p2;
+		  for (p2 = ptable.proc; p2 < &ptable.proc[NPROC]; p2++) {
+			if (p2->priority == 0 && p2->priority_q0 > p->priority_q0) {
+				p2->priority_q0--;
+			}
+		  }
+		  ////
         }
       }
     }
-
-	if (proc == NULL) {
-      release(&ptable.lock);
-	  continue;
-	}
-	 
+	
+	
+	// 
+	
+	
 	// Add ticks
 	p = proc;
     p->ticks[p->priority]++;
+	// Once the process has run, reset wait_ticks
 	p->wait_ticks[p->priority] = 0;
-    //p->tmpticks[p->priority]++;
     // Demote p if it uses up its time slice
     if (p->priority == 3) {
 	  if (p->ticks[3] % 8 == 0) {
+		//p->ticks[3] = 0;
         p->priority--;
 	  }
     } else if (p->priority == 2) {
       if (p->ticks[2] % 16 == 0) {
+		//p->ticks[2] = 0;
         p->priority--;
 	  }
     } else if (p->priority == 1) {
       if (p->ticks[1] % 32 == 0) {
+		//p->ticks[1] = 0;
         p->priority--;
+		//// FIFO in level 0
+		//   onec a process is demoted to level 0, assign it with a q0 priority.
+		num_q0++;
+		p->priority_q0 = num_q0;
+		////
 	  }
     } 
 	 
