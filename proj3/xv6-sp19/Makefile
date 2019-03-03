@@ -80,7 +80,7 @@ QEMUGDB := $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 
 # number of CPUs to emulate in QEMU
 ifndef CPUS
-CPUS := 1
+CPUS := 2
 endif
 
 QEMUOPTS := -hdb fs.img xv6.img -smp $(CPUS)
