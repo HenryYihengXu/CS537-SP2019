@@ -1,0 +1,15 @@
+@1
+
+changed file: 
+    kernel/vm.c: 
+		copyuvm: changed for loop i from 0 to 4 pages.
+		inituvm: changed mappages()'s second argument from 0 to (void*)(4*PGSIZE).
+    kernel/exec.c: 
+		changed starting point sz from 0 to 4 pages.
+	kernel/proc.c: 
+		changed p->sz from 1 page to 5 pages, p->tf->esp from 1 page to 5 pages, p->tf->eip from 0 to 4 pages.
+	kernel/makefile.mk : 
+		changed etrance from 0 to 0x4000.
+    user/makefile.mk: 
+		changed etrance from 0 to 0x4000.
+	
