@@ -75,7 +75,18 @@ trap(struct trapframe *tf)
             cpu->id, tf->cs, tf->eip);
     lapiceoi();
     break;
-   
+  // @2-2
+  case T_PGFLT:
+    if(growstack(proc->pgdir, proc->tf->esp, proc->top_stack) == 0)
+	  break;
+  
+    cprintf("pid %d %s: trap %d err %d on cpu %d "
+            "eip 0x%x addr 0x%x--kill proc\n",
+            proc->pid, proc->name, tf->trapno, tf->err, cpu->id, tf->eip, 
+            rcr2());
+    proc->killed = 1;
+	break; 
+  //
   default:
     if(proc == 0 || (tf->cs&3) == 0){
       // In kernel, it must be our mistake.

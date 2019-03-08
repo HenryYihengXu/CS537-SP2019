@@ -110,6 +110,10 @@ growproc(int n)
   uint sz;
   
   sz = proc->sz;
+  
+  if(sz + n + 5 * PGSIZE > proc->top_stack) // @2-2
+    return -1;                              // @2-2
+  
   if(n > 0){
     if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
       return -1;
@@ -121,6 +125,32 @@ growproc(int n)
   switchuvm(proc);
   return 0;
 }
+
+// @2-2  Grow current process's memory by n bytes.
+// Return 0 on success, -1 on failure.
+int
+growstack(pde_t *pgdir, uint sp, uint top_stack)
+{
+  uint newtop = top_stack - PGSIZE;
+  //pte_t *pte;
+  //top_stack = proc->top_stack;
+  //cprintf("esp: %d, rcr2(): %d, top_stack: %d\n", sp / PGSIZE, rcr2() / PGSIZE, top_stack / PGSIZE);
+  if(rcr2() < newtop)
+	return -1;
+  if(top_stack - 6 * PGSIZE < proc->sz)     
+    return -1;                              
+  /*if((pte = walkpgdir(pgdir, (void *) newtop, 1)) == 0)
+    return -1;
+  if(*pte & PTE_P)
+    return -1;*/
+  if(allocuvm(pgdir, newtop, top_stack) == 0)
+    return -1;
+
+  proc->top_stack = newtop;
+  switchuvm(proc);
+  return 0;
+}
+//
 
 // Create a new process copying p as the parent.
 // Sets up stack to return as if from system call.

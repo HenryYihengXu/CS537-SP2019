@@ -109,6 +109,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+int             growstack(pde_t *pgdir, uint sp, uint top_stack); // @2-2
 
 // swtch.S
 void            swtch(struct context**, struct context*);
