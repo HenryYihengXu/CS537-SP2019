@@ -1,0 +1,6 @@
+@1
+
+changed file: 
+    kernel/vc.c: copyuvm, changed for loop i from 0 to 4 pages.
+    kernel/exec.c: changed starting point sz from 0 to 4 pages.
+    user/makefile.mk: changed etrance from 0 to 0x4000
