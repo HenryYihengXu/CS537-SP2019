@@ -1,0 +1,27 @@
+@2
+
+changed file: 
+    kernel/vm.c: 
+		copyuvm: 
+			added a new parameter for top_stack
+			added another for loop to copy the stack
+    kernel/exec.c: 
+		changed the call of allocuvm to alloc a one page stack on the top.
+		assign top_stack to the process
+	kernel/proc.h:
+		added a new field top_stack to proc for the "top" of the stack, or "size" of the stack.
+	kernel/proc.c: 
+		userinit:
+			initialize proc->top_stack = USERTOP
+		fork:
+			changed the call of copyuvm to copy the stack to the child process.
+			copy the top_stack to the child process
+	kernel/defs.h:
+		changed the declaration of copyuvm()
+	kernel/syscall.c:
+		changed three if condition in "fetchxxx" and "argxxx" to check that the argument does not fall in the gap between heap and stack,
+		and does not go over the usertop nor fall in the first 4 pages.
+
+@2-2
+
+		

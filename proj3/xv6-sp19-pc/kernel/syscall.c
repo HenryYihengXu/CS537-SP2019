@@ -22,9 +22,28 @@ fetchint(struct proc *p, uint addr, int *ip)
   //cprintf("%d\n", p->sz / PGSIZE); // ?
   // @2 if(addr >= p->sz || addr+4 > p->sz) {
   // if((addr >= p->sz && addr < p->top_stack) || (addr + 4 > p->sz && addr + 4 < p->top_stack)) return -1;
-  if(((addr >= p->sz || addr+4 > p->sz) && addr < p->top_stack) || (addr >= USERTOP || addr+4 > USERTOP) || addr < 4 * PGSIZE){ // @2 ?
+  
+  ///*
+  uint ep;
+  int i;
+  if(addr < 4 * PGSIZE && addr > PGSIZE) {
+	
+    for(i = 0; i < 3; i++) {
+	  if(p->share[i] == -1) {
+		cprintf("first unmapped page: %d\n", i);
+		ep = (i + 1) * PGSIZE;
+		break;
+	  }
+    }
+	if(i == 3){
+	  ep = p->sz;
+	}
+  }
+  //*/
+  
+  if(((addr >= p->sz || addr+4 > p->sz) && addr < p->top_stack) || (addr >= USERTOP || addr+4 > USERTOP) || //addr < 4* PGSIZE){
+      addr < PGSIZE || (addr < 4 * PGSIZE && (addr / PGSIZE - 1 > i || addr + 4 > ep))){ // @2 ?
   //if(addr >= USERTOP || addr+4 > USERTOP || addr <= p->top_stack) { // @2
-  //cprintf("fuck\n");
     return -1;
   }
   *ip = *(int*)(addr);
@@ -40,26 +59,43 @@ fetchstr(struct proc *p, uint addr, char **pp)
   char *s, *ep;
 
   //cprintf("%d\n", p->sz / PGSIZE);
-  
+  //cprintf("%d\n", addr);
   // @2 if(addr >= p->sz){
-  if((addr >= p->sz && addr < p->top_stack) || addr >= USERTOP || addr < 4 * PGSIZE){ // @2
+  if((addr >= p->sz && addr < p->top_stack) || addr >= USERTOP || //addr < 4 * PGSIZE){
+      addr < PGSIZE || (addr < 4 * PGSIZE && p->share[addr / PGSIZE - 1] == -1)){
   //if(addr >= USERTOP || addr < p->top_stack){ // @2
-    //cprintf("fuck4\n");
+	//cprintf("fetchstr failed 1, addr = %d\n", addr);
     return -1;
   }
   *pp = (char*)addr;
   // @2 ep = (char*)p->sz;
-  if(addr < p->sz){        // @2
+  if(addr < 4 * PGSIZE) {
+	int i;
+    for(i = 0; i < 3; i++) {
+	  if(p->share[i] == -1) {
+		//cprintf("first unmapped page: %d\n", i);
+		ep = (char*)((i + 1) * PGSIZE);
+		break;
+	  }
+    }
+	if(i == 3){
+	  ep = (char*)p->sz;
+	}
+  } else if(addr < p->sz){        // @2
     ep = (char*)p->sz;     // @2
   }
   else{                    // @2
     ep = (char*)USERTOP;   // @2
   }
 
+  //cprintf("ep: %d\n", ep);
   for(s = *pp; s < ep; s++)
+	
     if(*s == 0){
+	  //cprintf("s: %d\n", s);
       return s - *pp;
 	}
+  //cprintf("fetchstr failed 2\n");
   return -1;
 }
 
@@ -80,8 +116,28 @@ argptr(int n, char **pp, int size)
   
   if(argint(n, &i) < 0)
     return -1;
+  if((uint)i < PGSIZE) {
+	  return -1;
+  }
+  ///*
+  uint ep;
+  int j;
+  if((uint)i < 4 * PGSIZE) {
+    for(j = 0; j < 3; j++) {
+	  if(proc->share[j] == -1) {
+		//cprintf("first unmapped page: %d\n", i);
+		ep = (i + 1) * PGSIZE;
+		break;
+	  }
+    }
+	if(j == 3){
+	  ep = proc->sz;
+	}
+  }
+  //*/
   // @2 if((uint)i >= proc->sz || (uint)i+size > proc->sz)
-  if((((uint)i >= proc->sz || (uint)i+size > proc->sz) && (uint)i < proc->top_stack) || ((uint)i >= USERTOP || (uint)i+size > USERTOP) || (uint)i < 4 * PGSIZE) // @2 ?
+  if((((uint)i >= proc->sz || (uint)i+size > proc->sz) && (uint)i < proc->top_stack) || ((uint)i >= USERTOP || (uint)i+size > USERTOP) || //(uint)i < 4 * PGSIZE)
+      ((uint)i < 4 * PGSIZE && ((uint)i / PGSIZE - 1 > j || (uint)i + size > ep))) // @2 Cause infinite loop trap 14 0x2000
   //if((uint)i >= USERTOP || (uint)i+size > USERTOP || (uint)i+size < proc->top_stack) // @2
     return -1;
   *pp = (char*)i;
@@ -96,10 +152,11 @@ int
 argstr(int n, char **pp)
 {
   int addr;
-  //cprintf("fuck1\n");
-  if(argint(n, &addr) < 0)
+  if(argint(n, &addr) < 0) {
+	//cprintf("argint in argstr failed\n");
     return -1;
-  //cprintf("fuck2\n");
+  }
+  //cprintf("argint in argstr succeed\n");
   return fetchstr(proc, addr, pp);
 }
 
@@ -129,6 +186,7 @@ static int (*syscalls[])(void) = {
 [SYS_wait]    sys_wait,
 [SYS_write]   sys_write,
 [SYS_uptime]  sys_uptime,
+[SYS_shmget]  sys_shmget, // @3
 };
 
 // Called on a syscall trap. Checks that the syscall number (passed via eax)

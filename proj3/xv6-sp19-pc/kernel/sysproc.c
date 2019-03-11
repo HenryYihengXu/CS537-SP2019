@@ -89,3 +89,13 @@ sys_uptime(void)
   return xticks;
 }
 
+
+// @3
+int
+sys_shmget(void)
+{
+  int n;
+  if(argint(0, &n) < 0)
+    return -1;
+  return (int)shmget(n);
+}

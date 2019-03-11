@@ -5,6 +5,7 @@
 #include "proc.h"
 #include "x86.h"
 
+
 static void bootothers(void);
 static void mpmain(void);
 void jmpkstack(void)  __attribute__((noreturn));
@@ -61,9 +62,12 @@ mainc(void)
   // Finish setting up this processor in
   cinit();
   sti();           // enable inturrupts
-  sharedpages[0] = kalloc(); // @3
-  sharedpages[1] = kalloc(); // @3
-  sharedpages[2] = kalloc(); // @3
+  sharedpages[0] = kalloc();
+  memset(sharedpages[0], 0, PGSIZE);
+  sharedpages[1] = kalloc();
+  memset(sharedpages[1], 0, PGSIZE);
+  sharedpages[2] = kalloc();
+  memset(sharedpages[2], 0, PGSIZE);
   userinit();      // first user process
   scheduler();     // start running processes
 }
