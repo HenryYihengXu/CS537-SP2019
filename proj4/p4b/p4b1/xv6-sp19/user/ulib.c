@@ -107,7 +107,7 @@ memmove(void *vdst, void *vsrc, int n)
 int //@thread_create
 thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2) {
   //uint pgsize = 1024;
-  char* stack = malloc(1024);
+  char* stack = sbrk(4096);
   return clone(start_routine, arg1, arg2, stack);
 }
 
@@ -122,4 +122,31 @@ thread_join() {
   }
   free(stack);
   return pid;
+}
+
+void // @ lock
+lock_acquire(lock_t * lock) {
+  int my_turn = fetch_and_add(&lock->ticket, 1);
+  while(lock->turn != my_turn) {
+  }
+}
+
+void // @lock
+lock_release(lock_t * lock) {
+  fetch_and_add(&lock->turn, 1);
+}
+
+void // @lock
+lock_init(lock_t * lock) {
+  lock->ticket = 0;
+  lock->turn = 0;
+}
+
+int fetch_and_add(int* variable, int value) {
+    __asm__ volatile("lock; xaddl %0, %1"
+      : "+r" (value), "+m" (*variable) // input+output
+      : // No input-only
+      : "memory"
+    );
+    return value;
 }

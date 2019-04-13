@@ -109,16 +109,28 @@ int
 growproc(int n)
 {
   uint sz;
-  
+  acquire(&ptable.lock);
   sz = proc->sz;
   if(n > 0){
-    if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
+    if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0) {
+      release(&ptable.lock);
       return -1;
+    }
+      
   } else if(n < 0){
-    if((sz = deallocuvm(proc->pgdir, sz, sz + n)) == 0)
+    if((sz = deallocuvm(proc->pgdir, sz, sz + n)) == 0) {
+      release(&ptable.lock);
       return -1;
+    }
   }
   proc->sz = sz;
+  struct proc *p;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if(p->pgdir == proc->pgdir) {
+      p->sz = sz;
+    }
+  }
+  release(&ptable.lock);
   switchuvm(proc);
   return 0;
 }
@@ -506,13 +518,23 @@ int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
   int i, pid;
   struct proc *np;
 
-  if (proc->sz - (uint)stack != PGSIZE) {
+  // if (sizeof(*stack) != PGSIZE) {
+  //   cprintf("aaa\n");
+  //   return -1;
+  // }
+  //cprintf("sz - stack: %d\n", proc->sz - (uint)stack);
+  //if (proc->sz - (uint)stack > PGSIZE) {
+  if ((proc->sz - (uint)stack) % PGSIZE != 0 || proc->sz - (uint)stack < PGSIZE) {
+    //cprintf("aaa\n");
     return -1;
   }
 
   // Allocate process.
   if((np = allocproc()) == 0)
     return -1;
+  
+  //cprintf("parent pid: %d\n", proc->pid);
+  //cprintf("child pid: %d\n", np->pid);
 
   proc->num_cthread += 1;
   
@@ -520,7 +542,7 @@ int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
-  //np->tf->ebp = (uint)stack;
+  np->tf->ebp = (uint)stack;
   np->stack_base = (uint)stack;
   //cprintf("%d\n", np->tf->ebp);
   np->pgdir = proc->pgdir;
@@ -593,6 +615,7 @@ join(void** stack)
       if(p->state == ZOMBIE){
         // Found one.
         pid = p->pid;
+        cprintf("pid: %d\n", p->pid);
         kfree(p->kstack);
         p->kstack = 0;
         //freevm(p->pgdir);
@@ -615,6 +638,7 @@ join(void** stack)
 
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
+      cprintf("return -1 in no kids\n");
       release(&ptable.lock);
       return -1;
     }

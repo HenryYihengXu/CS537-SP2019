@@ -2,6 +2,10 @@
 #define _USER_H_
 
 struct stat;
+typedef struct s{
+  int turn;
+  int ticket;
+} lock_t; // @lock
 
 // system calls
 int fork(void);
@@ -43,6 +47,10 @@ void free(void*);
 int atoi(const char*);
 int thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2); // @thread_create
 int thread_join(); // @thread_join
+void lock_acquire(lock_t *); // @lock
+void lock_release(lock_t *); // @lock
+void lock_init(lock_t *); //@lock
+int fetch_and_add(int* variable, int value); //@lock
 
 #endif // _USER_H_
 
