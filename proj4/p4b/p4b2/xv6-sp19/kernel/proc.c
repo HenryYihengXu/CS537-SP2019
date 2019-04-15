@@ -236,13 +236,12 @@ wait(void)
       }
       havekids = 1;
       if(p->state == ZOMBIE){
-        
-        if (p->parent->num_cthread != 0) {
-          cprintf("num_cthread != 0\n");
+        if (p->num_cthread != 0) {
+          //cprintf("num_cthread != 0\n");
           release(&ptable.lock);
           return -1;
         }
-        cprintf("num_cthread == 0\n");
+        //cprintf("num_cthread == 0\n");
         // Found one.
         pid = p->pid;
         kfree(p->kstack);
@@ -527,52 +526,37 @@ int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
     return -1;
 
   proc->num_cthread += 1;
-  
   np->is_thread = 1;
+
   np->sz = proc->sz;
+  np->pgdir = proc->pgdir;
   np->parent = proc;
   *np->tf = *proc->tf;
-  //np->tf->ebp = (uint)stack;
+
+  char *sp;
+  sp = uva2ka(proc->pgdir, (char*)stack);
+//  uint sp;
+//  sp = (uint)stack;
+
   np->stack_base = (uint)stack;
-  //cprintf("%d\n", np->tf->ebp);
-  np->pgdir = proc->pgdir;
-  uint sp = (uint)stack + PGSIZE;  //TODO: check if this works
+
   np->tf->eip = (uint)fcn;
+  np->tf->ebp = 0x0;
+  np->tf->esp = ((uint)stack + PGSIZE - 12);
+  np->tf->eax = 0;
 
   // Push argument strings, prepare rest of stack in ustack
-  
 
-  sp -= 4;
-  *((uint*)sp) = (uint)arg2;
-  sp -= 4;
-  *((uint*)sp) = (uint)arg1;
-  sp -= 4;
-  *((uint*)sp) = 0xffffffff;
-  
+  *(void **)(sp + PGSIZE - 4) = arg2;
+  *(void **)(sp + PGSIZE - 8) = arg1;
+  *(uint *)(sp + PGSIZE - 12) = 0xffffffff;
 
-  //uint ustack[3+2+1];
-  // sp -= strlen(((char*)arg1)) + 1;
-  // sp &= ~3;  // TODO: need to figure out what does this line do
-  // copyout(np->pgdir, sp, arg1, strlen(((char*)arg1))+1);
-  // ustack[3+0] = sp;
-
-  // sp -= strlen((char*)arg2) + 1;
-  // sp &= ~3;  // TODO: need to figure out what does this line do 
-  // copyout(np->pgdir, sp, arg2, strlen((char*)arg2) + 1);
-  // ustack[3+1] = sp;
-    
-  // ustack[3+2] = 0;
-  // ustack[0] = 0xffffffff;  // fake return PC
-  // ustack[1] = 2;
-  // ustack[2] = sp - (2+1)*4;  // argv pointer
-
-  // sp -= (3+2+1) * 4;
-  // copyout(np->pgdir, sp, ustack, (3+2+1)*4);
-
-  np->tf->esp = sp;
-
-  // Clear %eax so that clone returns 0 in the child.
-  np->tf->eax = 0;
+//  sp -= 4;
+//  *((uint*)sp) = (uint)arg2;
+//  sp -= 4;
+//  *((uint*)sp) = (uint)arg1;
+//  sp -= 4;
+//  *((uint*)sp) = 0xffffffff;
 
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])

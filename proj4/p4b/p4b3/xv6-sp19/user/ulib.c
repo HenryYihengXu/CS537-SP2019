@@ -150,4 +150,3 @@ lock_init(lock_t * lock) {
     lock->ticket = 0;
     lock->turn = 0;
 }
-

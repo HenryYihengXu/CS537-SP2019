@@ -116,7 +116,6 @@ growproc(int n)
       release(&ptable.lock);
       return -1;
     }
-      
   } else if(n < 0){
     if((sz = deallocuvm(proc->pgdir, sz, sz + n)) == 0) {
       release(&ptable.lock);
@@ -126,7 +125,7 @@ growproc(int n)
   proc->sz = sz;
   struct proc *p;
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if(p->pgdir == proc->pgdir) {
+    if (p->pgdir == proc->pgdir) {
       p->sz = sz;
     }
   }
@@ -155,7 +154,6 @@ fork(void)
     np->state = UNUSED;
     return -1;
   }
-  //np->is_thread = 0;
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
@@ -232,19 +230,17 @@ wait(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->parent != proc)
         continue;
-      if (p->is_thread) {
+	  if (p->is_thread) {
         continue;
       }
       havekids = 1;
       if(p->state == ZOMBIE){
-        
-        if (p->parent->num_cthread != 0) {
-          cprintf("num_cthread != 0\n");
+        // Found one.
+		if (p->num_cthread != 0) {
+          //cprintf("num_cthread != 0\n");
           release(&ptable.lock);
           return -1;
         }
-        cprintf("num_cthread == 0\n");
-        // Found one.
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
@@ -467,102 +463,52 @@ procdump(void)
     cprintf("\n");
   }
 }
-/*
+
 int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
   int i, pid;
   struct proc *np;
 
-  // Allocate process.
-  if((np = allocproc()) == 0)
-    return -1;
-
-  np->sz = proc->sz;
-  np->parent = proc;
-  np->pgdir = proc->pgdir;
-  *np->tf = *proc->tf;
-  //uint sp = (uint)stack + PGSIZE;
-  np->tf->eip = (uint)fcn;
-  stack += PGSIZE;
-  stack -= 4;
-  *((uint*)stack) = 0xffffffff;
-  stack -= 4;
-  //uint fakePC = 0xffffffff;
-  //cprintf("before copy fakepc\n");
-  //copyout(np->pgdir, sp, &fakePC, 4);
-  //cprintf("after copy fakepc\n");
-  // Push argument strings, prepare rest of stack in ustack.
-  //cprintf("before copy arg1\n");
-  copyout(np->pgdir, (uint)stack, arg1, 4);
-  //cprintf("after arg1\n");
-  stack -= 4;
-  copyout(np->pgdir, (uint)stack, arg2, 4);
-  cprintf("after copy arg2\n");
-  
-  np->tf->esp = (uint)stack;
-  // Clear %eax so that clone returns 0 in the child.
-  np->tf->eax = 0;
-
-  for(i = 0; i < NOFILE; i++)
-    if(proc->ofile[i])
-      np->ofile[i] = filedup(proc->ofile[i]);
-  np->cwd = idup(proc->cwd);
- 
-  pid = np->pid;
-  np->state = RUNNABLE;
-  safestrcpy(np->name, proc->name, sizeof(proc->name));
-  return pid;
- }
- */
-// @clone
-int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
-  int i, pid;
-  struct proc *np;
-
-  // if (sizeof(*stack) != PGSIZE) {
-  //   cprintf("aaa\n");
-  //   return -1;
-  // }
-  //cprintf("sz - stack: %d\n", proc->sz - (uint)stack);
-  //if (proc->sz - (uint)stack > PGSIZE) {
-  if ((proc->sz - (uint)stack) % PGSIZE != 0 || proc->sz - (uint)stack < PGSIZE) {
-    //cprintf("aaa\n");
+  if ((uint)stack % PGSIZE != 0 || proc->sz - (uint)stack < PGSIZE) {
+    //cprintf("sdfsfdsad\n");
     return -1;
   }
 
   // Allocate process.
   if((np = allocproc()) == 0)
     return -1;
-  
-  //cprintf("parent pid: %d\n", proc->pid);
-  //cprintf("child pid: %d\n", np->pid);
 
   proc->num_cthread += 1;
   np->is_thread = 1;
-  
+
   np->sz = proc->sz;
+  np->pgdir = proc->pgdir;
   np->parent = proc;
   *np->tf = *proc->tf;
-  np->tf->ebp = (uint)stack;
+
+  char *sp;
+  sp = uva2ka(proc->pgdir, (char*)stack);
+//  uint sp;
+//  sp = (uint)stack;
+
   np->stack_base = (uint)stack;
-  //cprintf("%d\n", np->tf->ebp);
-  np->pgdir = proc->pgdir;
-  uint sp = (uint)stack + PGSIZE;  //TODO: check if this works
+
   np->tf->eip = (uint)fcn;
+  np->tf->ebp = 0x0;
+  np->tf->esp = ((uint)stack + PGSIZE - 12);
+  np->tf->eax = 0;
 
   // Push argument strings, prepare rest of stack in ustack
-  
 
-  sp -= 4;
-  *((uint*)sp) = (uint)arg2;
-  sp -= 4;
-  *((uint*)sp) = (uint)arg1;
-  sp -= 4;
-  *((uint*)sp) = 0xffffffff;
+  *(void **)(sp + PGSIZE - 4) = arg2;
+  *(void **)(sp + PGSIZE - 8) = arg1;
+  *(uint *)(sp + PGSIZE - 12) = 0xffffffff;
 
-  np->tf->esp = sp;
-
-  // Clear %eax so that clone returns 0 in the child.
-  np->tf->eax = 0;
+//  sp -= 4;
+//  *((uint*)sp) = (uint)arg2;
+//  sp -= 4;
+//  *((uint*)sp) = (uint)arg1;
+//  sp -= 4;
+//  *((uint*)sp) = 0xffffffff;
 
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
@@ -595,7 +541,6 @@ join(void** stack)
       if(p->state == ZOMBIE){
         // Found one.
         pid = p->pid;
-        cprintf("pid: %d\n", p->pid);
         kfree(p->kstack);
         p->kstack = 0;
         //freevm(p->pgdir);
@@ -618,7 +563,6 @@ join(void** stack)
 
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
-      cprintf("return -1 in no kids\n");
       release(&ptable.lock);
       return -1;
     }
@@ -627,3 +571,6 @@ join(void** stack)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
   }
 }
+
+
+

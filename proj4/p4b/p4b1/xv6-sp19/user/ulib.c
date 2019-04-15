@@ -124,6 +124,15 @@ thread_join() {
   return pid;
 }
 
+int fetch_and_add(int* variable, int value) {
+    __asm__ volatile("lock; xaddl %0, %1"
+      : "+r" (value), "+m" (*variable) // input+output
+      : // No input-only
+      : "memory"
+    );
+    return value;
+}
+
 void // @ lock
 lock_acquire(lock_t * lock) {
   int my_turn = fetch_and_add(&lock->ticket, 1);
@@ -142,11 +151,4 @@ lock_init(lock_t * lock) {
   lock->turn = 0;
 }
 
-int fetch_and_add(int* variable, int value) {
-    __asm__ volatile("lock; xaddl %0, %1"
-      : "+r" (value), "+m" (*variable) // input+output
-      : // No input-only
-      : "memory"
-    );
-    return value;
-}
+
