@@ -9,7 +9,7 @@
 #include "user.h"
 
 #define PGSIZE 0x1000
-#define NUM_THREADS 5
+#define NUM_THREADS 50
 #define NUM_ITERATIONS 10
 #define check(exp, msg) if(exp) {} else {\
   printf(1, "%s:%d check (" #exp ") failed: %s\n", __FILE__, __LINE__, msg);\
@@ -28,22 +28,32 @@ static inline uint rdtsc() {
   asm("rdtsc" : "=a" (lo), "=d" (hi));
   return lo;
 }
-
+int z;
 void
 func(void *arg1, void *arg2)
 {
+  // if (arg1 == NULL) {
+  //   printf(1, "arg1 is null\n");
+  // }
+  // if (arg2 == NULL) {
+  //   printf(1, "arg2 is null\n");
+  // }
   int pid, local, i, j;
-
+  z = 0;
+  i = 0;
+  i = i + z - z;
   pid = getpid();
-
+  //printf(1, "func pid: %d\n", pid);
+  
   // Spin until all threads have been created
   while (global == 0) {
     sleep(1);
   }
 
   check(global == 1, "global is incorrect");
+  //printf(1, "function address: %d\n", &func);
+  printf(1, "ppid: %d, lastpid: %d, pid: %d\n", ppid, lastpid, pid);
   check(ppid < pid && pid <= lastpid, "getpid() returned the wrong pid");
-
   for (i = 0; i < NUM_ITERATIONS; ++i) {
     lock_acquire(&lock);
     local = sum + 1;

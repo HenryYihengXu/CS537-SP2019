@@ -3,6 +3,17 @@
 #include "fcntl.h"
 #include "user.h"
 #include "x86.h"
+#include "param.h"
+
+// typedef struct bad_at_naming {
+//   void* origin;
+//   void* aligned;
+// } aligned2origin;
+
+// aligned2origin ao_table[NPROC];
+
+int original[NPROC];
+int aligned[NPROC];
 
 char*
 strcpy(char *s, char *t)
@@ -107,30 +118,40 @@ memmove(void *vdst, void *vsrc, int n)
 int //@thread_create
 thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2) {
   //uint pgsize = 1024;
-  char* stack = sbrk(4096);
-  return clone(start_routine, arg1, arg2, stack);
+  void* origin = malloc(4096 * 2);
+  if (origin == 0) {
+    //printf(1, "malloc failed\n");
+    return -1;
+  }
+  void* stack = (void *)(((uint)origin + 4096 - 1) & ~(4096 - 1));
+  for (int i = 0; i < NPROC; i++) {
+    if (original[i] == 0) {
+      original[i] = (int)origin;
+      aligned[i] = (int)stack;
+      return clone(start_routine, arg1, arg2, stack);
+    }
+  }
+  return -1;
 }
 
 int // @thread_join
 thread_join() {
-  void** stack = malloc(sizeof(void**));
-  int pid = join(stack);
+  void* stack;
+  int pid = join(&stack);
   if (pid >= 0) {
-    free(*stack);
+    for (int i = 0; i < NPROC; i++) {
+      if (aligned[i] == (int)stack) {
+        free((void*)original[i]);
+        aligned[i] = 0;
+        original[i] = 0;
+        break;
+      }
+    }
   } else {
     printf(1, "thread_join failed\n");
   }
-  free(stack);
+  
   return pid;
-}
-
-int fetch_and_add(int* variable, int value) {
-    __asm__ volatile("lock; xaddl %0, %1"
-      : "+r" (value), "+m" (*variable) // input+output
-      : // No input-only
-      : "memory"
-    );
-    return value;
 }
 
 void // @ lock
@@ -151,4 +172,11 @@ lock_init(lock_t * lock) {
   lock->turn = 0;
 }
 
-
+int fetch_and_add(int* variable, int value) {
+    __asm__ volatile("lock; xaddl %0, %1"
+      : "+r" (value), "+m" (*variable) // input+output
+      : // No input-only
+      : "memory"
+    );
+    return value;
+}

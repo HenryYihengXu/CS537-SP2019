@@ -237,13 +237,16 @@ wait(void)
       }
       havekids = 1;
       if(p->state == ZOMBIE){
-        
-        if (p->parent->num_cthread != 0) {
-          cprintf("num_cthread != 0\n");
-          release(&ptable.lock);
-          return -1;
+        struct proc *pp;
+        int count = 0;
+        for(pp = ptable.proc; pp < &ptable.proc[NPROC]; pp++) {
+          if (pp->pgdir == p->pgdir) {
+            count++;
+          }
         }
-        cprintf("num_cthread == 0\n");
+        if (count != 1) {
+          break;
+        }
         // Found one.
         pid = p->pid;
         kfree(p->kstack);
@@ -467,64 +470,13 @@ procdump(void)
     cprintf("\n");
   }
 }
-/*
-int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
-  int i, pid;
-  struct proc *np;
 
-  // Allocate process.
-  if((np = allocproc()) == 0)
-    return -1;
-
-  np->sz = proc->sz;
-  np->parent = proc;
-  np->pgdir = proc->pgdir;
-  *np->tf = *proc->tf;
-  //uint sp = (uint)stack + PGSIZE;
-  np->tf->eip = (uint)fcn;
-  stack += PGSIZE;
-  stack -= 4;
-  *((uint*)stack) = 0xffffffff;
-  stack -= 4;
-  //uint fakePC = 0xffffffff;
-  //cprintf("before copy fakepc\n");
-  //copyout(np->pgdir, sp, &fakePC, 4);
-  //cprintf("after copy fakepc\n");
-  // Push argument strings, prepare rest of stack in ustack.
-  //cprintf("before copy arg1\n");
-  copyout(np->pgdir, (uint)stack, arg1, 4);
-  //cprintf("after arg1\n");
-  stack -= 4;
-  copyout(np->pgdir, (uint)stack, arg2, 4);
-  cprintf("after copy arg2\n");
-  
-  np->tf->esp = (uint)stack;
-  // Clear %eax so that clone returns 0 in the child.
-  np->tf->eax = 0;
-
-  for(i = 0; i < NOFILE; i++)
-    if(proc->ofile[i])
-      np->ofile[i] = filedup(proc->ofile[i]);
-  np->cwd = idup(proc->cwd);
- 
-  pid = np->pid;
-  np->state = RUNNABLE;
-  safestrcpy(np->name, proc->name, sizeof(proc->name));
-  return pid;
- }
- */
 // @clone
 int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
   int i, pid;
   struct proc *np;
 
-  // if (sizeof(*stack) != PGSIZE) {
-  //   cprintf("aaa\n");
-  //   return -1;
-  // }
-  //cprintf("sz - stack: %d\n", proc->sz - (uint)stack);
-  //if (proc->sz - (uint)stack > PGSIZE) {
-  if ((proc->sz - (uint)stack) % PGSIZE != 0 || proc->sz - (uint)stack < PGSIZE) {
+  if ((uint)stack % PGSIZE != 0 || proc->sz - (uint)stack < PGSIZE) {
     //cprintf("aaa\n");
     return -1;
   }
@@ -532,9 +484,6 @@ int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
   // Allocate process.
   if((np = allocproc()) == 0)
     return -1;
-  
-  //cprintf("parent pid: %d\n", proc->pid);
-  //cprintf("child pid: %d\n", np->pid);
 
   proc->num_cthread += 1;
   np->is_thread = 1;
@@ -544,9 +493,8 @@ int clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack) {
   *np->tf = *proc->tf;
   np->tf->ebp = (uint)stack;
   np->stack_base = (uint)stack;
-  //cprintf("%d\n", np->tf->ebp);
   np->pgdir = proc->pgdir;
-  uint sp = (uint)stack + PGSIZE;  //TODO: check if this works
+  uint sp = (uint)stack + PGSIZE;
   np->tf->eip = (uint)fcn;
 
   // Push argument strings, prepare rest of stack in ustack
@@ -594,8 +542,19 @@ join(void** stack)
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
+        //p->parent->num_cthread--;
+        struct proc *pp;
+        int count = 0;
+        for(pp = ptable.proc; pp < &ptable.proc[NPROC]; pp++) {
+          if (pp->pgdir == p->pgdir) {
+            count++;
+          }
+        }
+        if (count == 1) {
+          freevm(p->pgdir);
+        }
+        
         pid = p->pid;
-        cprintf("pid: %d\n", p->pid);
         kfree(p->kstack);
         p->kstack = 0;
         //freevm(p->pgdir);
@@ -604,13 +563,7 @@ join(void** stack)
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
-        if (p->parent->num_cthread == 0) {
-          cprintf("error in join!\n");
-        }
-        p->parent->num_cthread--;
-        //*stack = (void*)p->tf->ebp; 
         *stack = (void*)p->stack_base;
-        //cprintf("%d\n", p->tf->ebp);
         release(&ptable.lock);
         return pid;
       }
