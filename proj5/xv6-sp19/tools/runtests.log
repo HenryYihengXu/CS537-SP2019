@@ -1,0 +1,40 @@
+starting build
+
+**********************************************************************
+
+Test build
+build project using make
+
+**********************************************************************
+Trying to clean project using make clean
+make clean
+make: *** No rule to make target 'clean'.  Stop.
+Trying to build project using make
+make
+make: *** No targets specified and no makefile found.  Stop.
+gcc xcheck.c -o xcheck
+
+
+test build PASSED
+ (build project using make)
+ file 'xcheck' exists after make clean, removing
+ file 'mkfs.o' exists after make clean, removing
+
+starting Good
+
+**********************************************************************
+
+Test Good
+run on a good filesystem
+
+**********************************************************************
+/tmp/tmp8PQ2To/p/./xcheck /u/c/s/cs537-1/tests/p5/images/Good
+Failure: ./xcheck returned incorrect status code. Expected 0 got 1
+
+
+test Good FAILED (0 of 5)
+ (run on a good filesystem)
+ ./xcheck returned incorrect status code. Expected 0 got 1
+
+Skipped 17 tests.
+To keep testing after failing a test, use flag '-c' or '--continue'
